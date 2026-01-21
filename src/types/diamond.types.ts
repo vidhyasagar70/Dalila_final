@@ -38,6 +38,7 @@ export interface DiamondData {
   CW?: string;
   SN?: string;
   SW?: string;
+  RATIO?: number | string;
   KEY_TO_SYMBOLS?: string;
   COMMENTS_1?: string;
   REPORT_COMMENTS?: string;
