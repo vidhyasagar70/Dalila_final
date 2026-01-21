@@ -13,7 +13,6 @@ import {
     FileText,
     Grip,
     ShoppingCart,
-    MessageSquare,
 } from "lucide-react";
 import type { DiamondData } from "@/types/diamond.types";
 import { cartApi, holdApi, queryApi } from "@/lib/api";

@@ -14,22 +14,8 @@ import {
     MessageSquare,
     Loader2,
 } from "lucide-react";
-import { Marcellus, Maven_Pro } from "next/font/google";
 import { DiamondMediaViewer } from "./Diamond/DiamondMediaViewer";
 import Footer from "./Footer";
-
-const marcellus = Marcellus({
-    variable: "--font-marcellus",
-    subsets: ["latin"],
-    weight: "400",
-});
-
-const mavenPro = Maven_Pro({
-    variable: "--font-maven-pro",
-    subsets: ["latin"],
-    weight: ["400", "500", "600", "700", "800"],
-    display: "swap",
-});
 
 interface DiamondDetailViewMobileProps {
     diamond: DiamondData;
@@ -385,7 +371,7 @@ const DiamondDetailViewMobile: React.FC<DiamondDetailViewMobileProps> = ({
                                     </div>
                                     <div>
                                         <div className="text-gray-500 mb-0.5">Shade</div>
-                                        <div className="font-medium text-gray-900">{(diamond as any).SHADE || "N/A"}</div>
+                                        <div className="font-medium text-gray-900">{((diamond as DiamondData & { SHADE?: string }).SHADE) || "N/A"}</div>
                                     </div>
                                 </div>
                             </div>
