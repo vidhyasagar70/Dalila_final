@@ -7,12 +7,14 @@ interface AddToCartButtonProps {
   selectedCount: number;
   selectedStoneNumbers: string[];
   onAddToCart?: () => void;
+  iconOnly?: boolean;
 }
 
 const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   selectedCount,
   selectedStoneNumbers,
   onAddToCart,
+  iconOnly = false,
 }) => {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -213,7 +215,11 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
     <button
       onClick={handleAddToCart}
       disabled={selectedCount === 0 || isAdding}
-      className={`flex items-center justify-center cursor-pointer gap-2 px-4 py-2 text-white text-sm font-medium rounded-none shadow-sm transition-colors w-[140px] ${
+      className={`flex items-center justify-center cursor-pointer gap-2 text-white text-sm font-medium shadow-sm transition-colors ${
+        iconOnly
+          ? "rounded-full h-7 w-7 p-0 min-w-0"
+          : "rounded-none px-4 py-2 w-[140px]"
+      } ${
         selectedCount === 0 || isAdding
           ? "bg-gray-400 cursor-not-allowed"
           : "bg-[#000033] hover:bg-[#000055]"
@@ -226,13 +232,13 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
     >
       {isAdding ? (
         <>
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Adding...
+          <Loader2 className={iconOnly ? "h-3 w-3 animate-spin" : "h-4 w-4 animate-spin"} />
+          {!iconOnly && "Adding..."}
         </>
       ) : (
         <>
-          <ShoppingCart className="h-4 w-4" />
-          Add to Cart
+          <ShoppingCart className={iconOnly ? "h-3 w-3" : "h-4 w-4"} />
+          {!iconOnly && "Add to Cart"}
         </>
       )}
     </button>

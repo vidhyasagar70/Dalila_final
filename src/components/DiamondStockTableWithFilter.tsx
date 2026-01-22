@@ -550,21 +550,19 @@ export default function DiamondStockTableWithFilter() {
 
               {isLoggedIn && (
                 <>
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={selectedDiamonds.length === 0}
-                    className="bg-black hover:bg-gray-800 text-white rounded-full h-7 px-1.5 flex items-center gap-0.5 disabled:opacity-50 min-w-0"
-                  >
-                    <ShoppingCart className="w-3 h-3" />
-                  </button>
+                  <AddToCartButton
+                    selectedCount={selectedDiamonds.length}
+                    selectedStoneNumbers={selectedDiamonds.map((d) => d.STONE_NO)}
+                    onAddToCart={handleAddToCart}
+                    iconOnly
+                  />
 
-                  <button
-                    onClick={handleAddToHold}
-                    disabled={selectedDiamonds.length === 0}
-                    className="bg-gray-700 hover:bg-gray-900 text-white rounded-full h-7 px-1.5 flex items-center gap-0.5 disabled:opacity-50 min-w-0"
-                  >
-                    <Hand className="w-3 h-3" />
-                  </button>
+                  <HoldButton
+                    selectedCount={selectedDiamonds.length}
+                    selectedStoneNumbers={selectedDiamonds.map((d) => d.STONE_NO)}
+                    onAddToHold={handleAddToHold}
+                    iconOnly
+                  />
                 </>
               )}
 
