@@ -34,8 +34,12 @@ export default function RootLayout({
       lang="en"
       className={`${playfair.variable} ${jost.variable} overflow-x-hidden`}
       suppressHydrationWarning
+      style={{ colorScheme: "light" }}
     >
-      <body className="antialiased bg-background text-foreground font-jost overflow-x-hidden" suppressHydrationWarning>
+      <head>
+        <meta name="color-scheme" content="light" />
+      </head>
+      <body className="antialiased bg-white text-gray-900 font-jost overflow-x-hidden" suppressHydrationWarning style={{ colorScheme: "light" }}>
         <HeaderFooterWrapper>{children}</HeaderFooterWrapper>
         <Toaster
           position="bottom-right"

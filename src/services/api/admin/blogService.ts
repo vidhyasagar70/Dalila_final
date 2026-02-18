@@ -51,8 +51,14 @@ export const getBlogById = async (blogId: string): Promise<BlogResponse | null> 
 
 // Admin: Create new blog
 export const createBlog = async (data: {
-  title: string;
-  description: string;
+  title: string; // H1 Title - Blog Title
+  h2Subtitle?: string; // H2 Subtitle - Blog Subtitle
+  customSlug?: string; // Custom slug (optional - auto-generated from title if empty)
+  featuredImage?: string; // Featured image URL
+  description?: string; // Kept for backward compatibility
+  content?: string; // Rich text content
+  metaTitle?: string; // Meta title (optional)
+  metaDescription?: string; // Meta description (optional)
 }): Promise<BlogResponse> => {
   try {
     const token = getAuthToken();
@@ -76,7 +82,16 @@ export const createBlog = async (data: {
 // Admin: Update blog
 export const updateBlog = async (
   blogId: string,
-  data: { title?: string; description?: string }
+  data: {
+    title?: string; // H1 Title - Blog Title
+    h2Subtitle?: string; // H2 Subtitle - Blog Subtitle
+    customSlug?: string; // Custom slug (optional - auto-generated from title if empty)
+    featuredImage?: string; // Featured image URL
+    description?: string; // Kept for backward compatibility
+    content?: string; // Rich text content
+    metaTitle?: string; // Meta title (optional)
+    metaDescription?: string; // Meta description (optional)
+  }
 ): Promise<BlogResponse> => {
   try {
     const token = getAuthToken();

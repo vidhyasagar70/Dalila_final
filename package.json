@@ -12,6 +12,9 @@
   },
   "dependencies": {
     "@tabler/icons-react": "^3.35.0",
+    "@tiptap/extension-placeholder": "^3.19.0",
+    "@tiptap/react": "^3.19.0",
+    "@tiptap/starter-kit": "^3.19.0",
     "axios": "^1.12.2",
     "clsx": "^2.1.1",
     "cookies-next": "^6.1.0",

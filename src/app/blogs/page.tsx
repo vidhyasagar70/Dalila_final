@@ -11,8 +11,12 @@ import {
   Plus,
   X,
   Edit2,
+  Trash2,
+  Image as ImageIcon,
+  Link as LinkIcon,
 } from "lucide-react";
 import AnimatedContainer from "@/components/shared/AnimatedContainer";
+import RichTextEditor from "@/components/shared/RichTextEditor";
 import { blogApi, type Blog } from "@/lib/api";
 
 const marcellus = Marcellus({
@@ -39,18 +43,34 @@ export default function BlogsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageInputType, setImageInputType] = useState<"url" | "gallery">("url");
   const [newBlog, setNewBlog] = useState({
     title: "",
-    description: "",
+    h2Subtitle: "",
+    customSlug: "",
+    featuredImage: "",
+    content: "",
+    metaTitle: "",
+    metaDescription: "",
   });
   const [editBlog, setEditBlog] = useState<{
     id: string;
     title: string;
-    description: string;
+    h2Subtitle: string;
+    customSlug: string;
+    featuredImage: string;
+    content: string;
+    metaTitle: string;
+    metaDescription: string;
   }>({
     id: "",
     title: "",
-    description: "",
+    h2Subtitle: "",
+    customSlug: "",
+    featuredImage: "",
+    content: "",
+    metaTitle: "",
+    metaDescription: "",
   });
   const itemsPerPage = 9;
 
@@ -126,8 +146,8 @@ export default function BlogsPage() {
   };
 
   const handleAddBlog = async () => {
-    if (!newBlog.title.trim() || !newBlog.description.trim()) {
-      alert("Please fill in both title and description");
+    if (!newBlog.title.trim() || !newBlog.content.trim()) {
+      alert("Please fill in Blog Title and Content");
       return;
     }
 
@@ -135,13 +155,27 @@ export default function BlogsPage() {
       setIsSubmitting(true);
       const response = await blogApi.create({
         title: newBlog.title,
-        description: newBlog.description,
+        h2Subtitle: newBlog.h2Subtitle,
+        customSlug: newBlog.customSlug,
+        featuredImage: newBlog.featuredImage,
+        content: newBlog.content,
+        metaTitle: newBlog.metaTitle,
+        metaDescription: newBlog.metaDescription,
+        description: newBlog.content, // For backward compatibility
       });
 
       if (response && response.success) {
         alert("Blog created successfully!");
         setShowAddModal(false);
-        setNewBlog({ title: "", description: "" });
+        setNewBlog({
+          title: "",
+          h2Subtitle: "",
+          customSlug: "",
+          featuredImage: "",
+          content: "",
+          metaTitle: "",
+          metaDescription: "",
+        });
         setCurrentPage(1);
         fetchBlogs();
       } else {
@@ -160,14 +194,19 @@ export default function BlogsPage() {
     setEditBlog({
       id: blog._id,
       title: blog.title,
-      description: blog.description,
+      h2Subtitle: blog.h2Subtitle || "",
+      customSlug: blog.customSlug || "",
+      featuredImage: blog.featuredImage || "",
+      content: blog.content || blog.description || "",
+      metaTitle: blog.metaTitle || "",
+      metaDescription: blog.metaDescription || "",
     });
     setShowEditModal(true);
   };
 
   const handleUpdateBlog = async () => {
-    if (!editBlog.title.trim() || !editBlog.description.trim()) {
-      alert("Please fill in both title and description");
+    if (!editBlog.title.trim() || !editBlog.content.trim()) {
+      alert("Please fill in Blog Title and Content");
       return;
     }
 
@@ -175,13 +214,28 @@ export default function BlogsPage() {
       setIsSubmitting(true);
       const response = await blogApi.update(editBlog.id, {
         title: editBlog.title,
-        description: editBlog.description,
+        h2Subtitle: editBlog.h2Subtitle,
+        customSlug: editBlog.customSlug,
+        featuredImage: editBlog.featuredImage,
+        content: editBlog.content,
+        metaTitle: editBlog.metaTitle,
+        metaDescription: editBlog.metaDescription,
+        description: editBlog.content, // For backward compatibility
       });
 
       if (response && response.success) {
         alert("Blog updated successfully!");
         setShowEditModal(false);
-        setEditBlog({ id: "", title: "", description: "" });
+        setEditBlog({
+          id: "",
+          title: "",
+          h2Subtitle: "",
+          customSlug: "",
+          featuredImage: "",
+          content: "",
+          metaTitle: "",
+          metaDescription: "",
+        });
         fetchBlogs();
       } else {
         alert("Failed to update blog. Please try again.");
@@ -191,6 +245,30 @@ export default function BlogsPage() {
       alert(error instanceof Error ? error.message : "Failed to update blog");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteBlog = async (blogId: string, blogTitle: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click navigation
+    
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${blogTitle}"? This action cannot be undone.`
+    );
+    
+    if (!confirmed) return;
+
+    try {
+      const response = await blogApi.delete(blogId);
+      
+      if (response) {
+        alert("Blog deleted successfully!");
+        fetchBlogs();
+      } else {
+        alert("Failed to delete blog. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error deleting blog:", error);
+      alert("Failed to delete blog. Please try again.");
     }
   };
 
@@ -282,7 +360,7 @@ export default function BlogsPage() {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-4 bg-gradient-to-b from-white to-gray-50">
+      <section className="pt-32 pb-16 px-4 bg-linear-to-b from-white to-gray-50">
         <div className="container mx-auto max-w-7xl">
           <AnimatedContainer direction="up">
             <div className="text-center mb-4">
@@ -350,18 +428,44 @@ export default function BlogsPage() {
                       className="bg-white rounded-none shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer h-full flex flex-col relative"
                       onClick={() => router.push(`/blogs/${blog._id}`)}
                     >
-                      {/* Edit Button - Only visible for Admin */}
-                      {isAdmin && (
-                        <button
-                          onClick={(e) => handleEditClick(blog, e)}
-                          className="absolute top-4 cursor-pointer right-4 z-10 p-2 bg-white rounded-none shadow-md hover:bg-[#c89e3a] hover:text-white transition-colors group"
-                          title="Edit Blog"
-                        >
-                          <Edit2
-                            size={18}
-                            className="text-[#c89e3a] group-hover:text-white"
+                      {/* Featured Image */}
+                      {blog.featuredImage && (
+                        <div className="w-full h-48 overflow-hidden">
+                          <img
+                            src={blog.featuredImage}
+                            alt={blog.title}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                            }}
                           />
-                        </button>
+                        </div>
+                      )}
+
+                      {/* Admin Action Buttons - Only visible for Admin */}
+                      {isAdmin && (
+                        <div className="absolute top-4 right-4 z-10 flex gap-2">
+                          <button
+                            onClick={(e) => handleEditClick(blog, e)}
+                            className="cursor-pointer p-2 bg-white rounded-none shadow-md hover:bg-[#c89e3a] hover:text-white transition-colors group"
+                            title="Edit Blog"
+                          >
+                            <Edit2
+                              size={18}
+                              className="text-[#c89e3a] group-hover:text-white"
+                            />
+                          </button>
+                          <button
+                            onClick={(e) => handleDeleteBlog(blog._id, blog.title, e)}
+                            className="cursor-pointer p-2 bg-white rounded-none shadow-md hover:bg-red-600 hover:text-white transition-colors group"
+                            title="Delete Blog"
+                          >
+                            <Trash2
+                              size={18}
+                              className="text-red-600 group-hover:text-white"
+                            />
+                          </button>
+                        </div>
                       )}
 
                       <div className="p-6 flex-1 flex flex-col">
@@ -371,10 +475,18 @@ export default function BlogsPage() {
                           {blog.title}
                         </h3>
 
+                        {blog.h2Subtitle && (
+                          <h4
+                            className={`text-lg text-gray-700 mb-3 ${jost.className}`}
+                          >
+                            {blog.h2Subtitle}
+                          </h4>
+                        )}
+
                         <p
                           className={`text-gray-600 mb-4 flex-1 ${jost.className}`}
                         >
-                          {getExcerpt(blog.description)}
+                          {getExcerpt(blog.content || blog.description)}
                         </p>
 
                         <div className="flex items-center justify-between pt-4 border-t border-gray-200">
@@ -419,8 +531,8 @@ export default function BlogsPage() {
       {/* Add Blog Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-none max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div className="bg-white rounded-none max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
               <h2
                 className={`text-2xl font-semibold text-[#2d2d2d] ${marcellus.className}`}
               >
@@ -429,7 +541,15 @@ export default function BlogsPage() {
               <button
                 onClick={() => {
                   setShowAddModal(false);
-                  setNewBlog({ title: "", description: "" });
+                  setNewBlog({
+                    title: "",
+                    h2Subtitle: "",
+                    customSlug: "",
+                    featuredImage: "",
+                    content: "",
+                    metaTitle: "",
+                    metaDescription: "",
+                  });
                 }}
                 className="text-gray-500 hover:text-gray-700 transition-colors"
                 disabled={isSubmitting}
@@ -438,12 +558,13 @@ export default function BlogsPage() {
               </button>
             </div>
 
-            <div className="p-6">
-              <div className="mb-6">
+            <div className="p-6 space-y-6">
+              {/* Blog Title (H1) */}
+              <div>
                 <label
                   className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
                 >
-                  Title
+                  Blog Title (H1) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -457,32 +578,184 @@ export default function BlogsPage() {
                 />
               </div>
 
-              <div className="mb-6">
+              {/* Blog Subtitle (H2) */}
+              <div>
                 <label
                   className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
                 >
-                  Description (HTML supported)
+                  Blog Subtitle (H2)
                 </label>
-                <textarea
-                  value={newBlog.description}
+                <input
+                  type="text"
+                  value={newBlog.h2Subtitle}
                   onChange={(e) =>
-                    setNewBlog({ ...newBlog, description: e.target.value })
+                    setNewBlog({ ...newBlog, h2Subtitle: e.target.value })
                   }
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] min-h-[200px] bg-white text-gray-900 ${jost.className}`}
-                  placeholder="<h1>Welcome!</h1><p>Your blog content here...</p>"
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] bg-white text-gray-900 ${jost.className}`}
+                  placeholder="Enter blog subtitle (optional)"
                   disabled={isSubmitting}
                 />
-                <p className={`text-xs text-gray-500 mt-2 ${jost.className}`}>
-                  You can use HTML tags like &lt;h1&gt;, &lt;p&gt;,
-                  &lt;strong&gt;, etc.
+              </div>
+
+              {/* Custom Slug */}
+              <div>
+                <label
+                  className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
+                >
+                  Custom Slug (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={newBlog.customSlug}
+                  onChange={(e) =>
+                    setNewBlog({ ...newBlog, customSlug: e.target.value })
+                  }
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] bg-white text-gray-900 ${jost.className}`}
+                  placeholder="custom-blog-slug (leave empty to auto-generate from title)"
+                  disabled={isSubmitting}
+                />
+                <p className={`text-xs text-gray-500 mt-1 ${jost.className}`}>
+                  Leave empty to auto-generate from title
                 </p>
               </div>
 
-              <div className="flex gap-3 justify-end">
+              {/* Featured Image */}
+              <div>
+                <label
+                  className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
+                >
+                  Featured Image
+                </label>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setImageInputType("url")}
+                    className={`px-4 py-2 rounded-none border transition-colors ${
+                      imageInputType === "url"
+                        ? "bg-[#c89e3a] text-white border-[#c89e3a]"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    } ${jost.className}`}
+                    disabled={isSubmitting}
+                  >
+                    <LinkIcon size={16} className="inline mr-2" />
+                    Add URL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageInputType("gallery");
+                      alert("Gallery selection coming soon!");
+                    }}
+                    className={`px-4 py-2 rounded-none border transition-colors ${
+                      imageInputType === "gallery"
+                        ? "bg-[#c89e3a] text-white border-[#c89e3a]"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    } ${jost.className}`}
+                    disabled={isSubmitting}
+                  >
+                    <ImageIcon size={16} className="inline mr-2" />
+                    Select from Gallery
+                  </button>
+                </div>
+                {imageInputType === "url" && (
+                  <input
+                    type="text"
+                    value={newBlog.featuredImage}
+                    onChange={(e) =>
+                      setNewBlog({ ...newBlog, featuredImage: e.target.value })
+                    }
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] bg-white text-gray-900 ${jost.className}`}
+                    placeholder="https://example.com/image.jpg"
+                    disabled={isSubmitting}
+                  />
+                )}
+                {newBlog.featuredImage && (
+                  <div className="mt-2 border border-gray-300 rounded p-2">
+                    <img
+                      src={newBlog.featuredImage}
+                      alt="Preview"
+                      className="max-h-40 object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Content (Rich Text Editor) */}
+              <div>
+                <label
+                  className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
+                >
+                  Paragraph Content <span className="text-red-500">*</span>
+                </label>
+                <RichTextEditor
+                  value={newBlog.content}
+                  onChange={(value) =>
+                    setNewBlog({ ...newBlog, content: value })
+                  }
+                  placeholder="Start writing your blog content..."
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              {/* Meta Title */}
+              <div>
+                <label
+                  className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
+                >
+                  Meta Title (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={newBlog.metaTitle}
+                  onChange={(e) =>
+                    setNewBlog({ ...newBlog, metaTitle: e.target.value })
+                  }
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] bg-white text-gray-900 ${jost.className}`}
+                  placeholder="SEO meta title"
+                  disabled={isSubmitting}
+                />
+                <p className={`text-xs text-gray-500 mt-1 ${jost.className}`}>
+                  Recommended: 50-60 characters
+                </p>
+              </div>
+
+              {/* Meta Description */}
+              <div>
+                <label
+                  className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
+                >
+                  Meta Description (Optional)
+                </label>
+                <textarea
+                  value={newBlog.metaDescription}
+                  onChange={(e) =>
+                    setNewBlog({ ...newBlog, metaDescription: e.target.value })
+                  }
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] min-h-[80px] bg-white text-gray-900 ${jost.className}`}
+                  placeholder="SEO meta description"
+                  disabled={isSubmitting}
+                />
+                <p className={`text-xs text-gray-500 mt-1 ${jost.className}`}>
+                  Recommended: 150-160 characters
+                </p>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
                 <button
                   onClick={() => {
                     setShowAddModal(false);
-                    setNewBlog({ title: "", description: "" });
+                    setNewBlog({
+                      title: "",
+                      h2Subtitle: "",
+                      customSlug: "",
+                      featuredImage: "",
+                      content: "",
+                      metaTitle: "",
+                      metaDescription: "",
+                    });
                   }}
                   className={`px-6 py-2 border border-gray-300 text-gray-700 rounded-none hover:bg-gray-50 transition-colors ${jost.className}`}
                   disabled={isSubmitting}
@@ -496,7 +769,7 @@ export default function BlogsPage() {
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-12 h-12 animate-spin text-[#FAF6EB] mx-auto mb-4" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                       Creating...
                     </>
                   ) : (
@@ -512,8 +785,8 @@ export default function BlogsPage() {
       {/* Edit Blog Modal */}
       {showEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-none max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div className="bg-white rounded-none max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
               <h2
                 className={`text-2xl font-semibold text-[#2d2d2d] ${marcellus.className}`}
               >
@@ -522,7 +795,16 @@ export default function BlogsPage() {
               <button
                 onClick={() => {
                   setShowEditModal(false);
-                  setEditBlog({ id: "", title: "", description: "" });
+                  setEditBlog({
+                    id: "",
+                    title: "",
+                    h2Subtitle: "",
+                    customSlug: "",
+                    featuredImage: "",
+                    content: "",
+                    metaTitle: "",
+                    metaDescription: "",
+                  });
                 }}
                 className="text-gray-500 hover:text-gray-700 transition-colors"
                 disabled={isSubmitting}
@@ -531,12 +813,13 @@ export default function BlogsPage() {
               </button>
             </div>
 
-            <div className="p-6">
-              <div className="mb-6">
+            <div className="p-6 space-y-6">
+              {/* Blog Title (H1) */}
+              <div>
                 <label
                   className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
                 >
-                  Title
+                  Blog Title (H1) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -550,32 +833,185 @@ export default function BlogsPage() {
                 />
               </div>
 
-              <div className="mb-6">
+              {/* Blog Subtitle (H2) */}
+              <div>
                 <label
                   className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
                 >
-                  Description (HTML supported)
+                  Blog Subtitle (H2)
                 </label>
-                <textarea
-                  value={editBlog.description}
+                <input
+                  type="text"
+                  value={editBlog.h2Subtitle}
                   onChange={(e) =>
-                    setEditBlog({ ...editBlog, description: e.target.value })
+                    setEditBlog({ ...editBlog, h2Subtitle: e.target.value })
                   }
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] min-h-[200px] bg-white text-gray-900 ${jost.className}`}
-                  placeholder="<h1>Welcome!</h1><p>Your blog content here...</p>"
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] bg-white text-gray-900 ${jost.className}`}
+                  placeholder="Enter blog subtitle (optional)"
                   disabled={isSubmitting}
                 />
-                <p className={`text-xs text-gray-500 mt-2 ${jost.className}`}>
-                  You can use HTML tags like &lt;h1&gt;, &lt;p&gt;,
-                  &lt;strong&gt;, etc.
+              </div>
+
+              {/* Custom Slug */}
+              <div>
+                <label
+                  className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
+                >
+                  Custom Slug (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={editBlog.customSlug}
+                  onChange={(e) =>
+                    setEditBlog({ ...editBlog, customSlug: e.target.value })
+                  }
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] bg-white text-gray-900 ${jost.className}`}
+                  placeholder="custom-blog-slug (leave empty to auto-generate from title)"
+                  disabled={isSubmitting}
+                />
+                <p className={`text-xs text-gray-500 mt-1 ${jost.className}`}>
+                  Leave empty to auto-generate from title
                 </p>
               </div>
 
-              <div className="flex gap-3 justify-end">
+              {/* Featured Image */}
+              <div>
+                <label
+                  className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
+                >
+                  Featured Image
+                </label>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setImageInputType("url")}
+                    className={`px-4 py-2 rounded-none border transition-colors ${
+                      imageInputType === "url"
+                        ? "bg-[#c89e3a] text-white border-[#c89e3a]"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    } ${jost.className}`}
+                    disabled={isSubmitting}
+                  >
+                    <LinkIcon size={16} className="inline mr-2" />
+                    Add URL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageInputType("gallery");
+                      alert("Gallery selection coming soon!");
+                    }}
+                    className={`px-4 py-2 rounded-none border transition-colors ${
+                      imageInputType === "gallery"
+                        ? "bg-[#c89e3a] text-white border-[#c89e3a]"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                    } ${jost.className}`}
+                    disabled={isSubmitting}
+                  >
+                    <ImageIcon size={16} className="inline mr-2" />
+                    Select from Gallery
+                  </button>
+                </div>
+                {imageInputType === "url" && (
+                  <input
+                    type="text"
+                    value={editBlog.featuredImage}
+                    onChange={(e) =>
+                      setEditBlog({ ...editBlog, featuredImage: e.target.value })
+                    }
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] bg-white text-gray-900 ${jost.className}`}
+                    placeholder="https://example.com/image.jpg"
+                    disabled={isSubmitting}
+                  />
+                )}
+                {editBlog.featuredImage && (
+                  <div className="mt-2 border border-gray-300 rounded p-2">
+                    <img
+                      src={editBlog.featuredImage}
+                      alt="Preview"
+                      className="max-h-40 object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Content (Rich Text Editor) */}
+              <div>
+                <label
+                  className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
+                >
+                  Paragraph Content <span className="text-red-500">*</span>
+                </label>
+                <RichTextEditor
+                  value={editBlog.content}
+                  onChange={(value) =>
+                    setEditBlog({ ...editBlog, content: value })
+                  }
+                  placeholder="Start writing your blog content..."
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              {/* Meta Title */}
+              <div>
+                <label
+                  className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
+                >
+                  Meta Title (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={editBlog.metaTitle}
+                  onChange={(e) =>
+                    setEditBlog({ ...editBlog, metaTitle: e.target.value })
+                  }
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] bg-white text-gray-900 ${jost.className}`}
+                  placeholder="SEO meta title"
+                  disabled={isSubmitting}
+                />
+                <p className={`text-xs text-gray-500 mt-1 ${jost.className}`}>
+                  Recommended: 50-60 characters
+                </p>
+              </div>
+
+              {/* Meta Description */}
+              <div>
+                <label
+                  className={`block text-sm font-semibold text-gray-700 mb-2 ${jost.className}`}
+                >
+                  Meta Description (Optional)
+                </label>
+                <textarea
+                  value={editBlog.metaDescription}
+                  onChange={(e) =>
+                    setEditBlog({ ...editBlog, metaDescription: e.target.value })
+                  }
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] min-h-[80px] bg-white text-gray-900 ${jost.className}`}
+                  placeholder="SEO meta description"
+                  disabled={isSubmitting}
+                />
+                <p className={`text-xs text-gray-500 mt-1 ${jost.className}`}>
+                  Recommended: 150-160 characters
+                </p>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
                 <button
                   onClick={() => {
                     setShowEditModal(false);
-                    setEditBlog({ id: "", title: "", description: "" });
+                    setEditBlog({
+                      id: "",
+                      title: "",
+                      h2Subtitle: "",
+                      customSlug: "",
+                      featuredImage: "",
+                      content: "",
+                      metaTitle: "",
+                      metaDescription: "",
+                    });
                   }}
                   className={`px-6 py-2 border border-gray-300 text-gray-700 rounded-none hover:bg-gray-50 transition-colors ${jost.className}`}
                   disabled={isSubmitting}
@@ -589,7 +1025,7 @@ export default function BlogsPage() {
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-12 h-12 animate-spin text-[#FAF6EB] mx-auto mb-4" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                       Updating...
                     </>
                   ) : (

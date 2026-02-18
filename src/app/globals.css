@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -15,10 +16,17 @@
   --font-playfair: "Playfair Display", serif;
 }
 
+/* Force light mode - override system dark mode preference */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #171717;
+    color-scheme: light;
+  }
+  
+  html, body {
+    background: #ffffff !important;
+    color: #171717 !important;
   }
 }
 
@@ -28,11 +36,14 @@ html {
   width: 100%;
   max-width: 100vw;
   position: relative;
+  background: #ffffff;
+  color: #171717;
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: #ffffff;
+  color: #171717;
   font-family: var(--font-jost);
   margin: 0;
   padding: 0;
@@ -40,6 +51,7 @@ body {
   width: 100%;
   max-width: 100vw;
   position: relative;
+  color-scheme: light;
 }
 
 /* Prevent horizontal scroll on all pages */
