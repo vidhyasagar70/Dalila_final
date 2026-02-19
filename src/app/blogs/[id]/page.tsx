@@ -32,6 +32,44 @@ export default function BlogDetailPage() {
     }
   }, [params.id]);
 
+  // Update document title and meta tags when blog loads
+  useEffect(() => {
+    if (blog) {
+      // Update page title
+      document.title = blog.metaTitle || blog.title || "Blog";
+      
+      // Update meta description
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute(
+          "content",
+          blog.metaDescription || blog.h2Subtitle || blog.title
+        );
+      }
+      
+      // Update Open Graph tags
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) {
+        ogTitle.setAttribute("content", blog.metaTitle || blog.title);
+      }
+      
+      const ogDescription = document.querySelector('meta[property="og:description"]');
+      if (ogDescription) {
+        ogDescription.setAttribute(
+          "content",
+          blog.metaDescription || blog.h2Subtitle || blog.title
+        );
+      }
+      
+      if (blog.featuredImage) {
+        const ogImage = document.querySelector('meta[property="og:image"]');
+        if (ogImage) {
+          ogImage.setAttribute("content", blog.featuredImage);
+        }
+      }
+    }
+  }, [blog]);
+
   const fetchBlogDetail = async (id: string) => {
     try {
       setLoading(true);
@@ -107,13 +145,37 @@ export default function BlogDetailPage() {
       {/* Blog Content */}
       <article className="container mx-auto max-w-4xl px-4 py-8">
         <AnimatedContainer direction="up">
-          <div className="bg-white rounded-none shadow-lg p-8 md:p-12">
-            {/* Title */}
-            <h1
-              className={`text-3xl md:text-4xl lg:text-5xl text-[#2d2d2d] font-normal tracking-tight mb-6 ${marcellus.className}`}
-            >
-              {blog.title}
-            </h1>
+          <div className="bg-white rounded-none shadow-lg overflow-hidden">
+            {/* Featured Image */}
+            {blog.featuredImage && (
+              <div className="w-full h-64 md:h-96 overflow-hidden">
+                <img
+                  src={blog.featuredImage}
+                  alt={blog.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              </div>
+            )}
+            
+            <div className="p-8 md:p-12">
+              {/* Title */}
+              <h1
+                className={`text-3xl md:text-4xl lg:text-5xl text-[#2d2d2d] font-normal tracking-tight mb-4 ${marcellus.className}`}
+              >
+                {blog.title}
+              </h1>
+
+              {/* H2 Subtitle */}
+              {blog.h2Subtitle && (
+                <h2
+                  className={`text-xl md:text-2xl text-gray-600 font-normal mb-6 ${jost.className}`}
+                >
+                  {blog.h2Subtitle}
+                </h2>
+              )}
 
             {/* Meta Information */}
             <div className="flex flex-wrap items-center gap-6 pb-6 mb-8 border-b border-gray-200">
@@ -131,14 +193,14 @@ export default function BlogDetailPage() {
               </div>
             </div>
 
-            {/* Blog Description (HTML Content) */}
+            {/* Blog Content (Rich Text HTML) */}
             <div
               className={`prose prose-lg max-w-none ${jost.className}`}
               style={{
                 color: "#4a4a4a",
                 lineHeight: "1.8",
               }}
-              dangerouslySetInnerHTML={{ __html: blog.description }}
+              dangerouslySetInnerHTML={{ __html: blog.content || blog.description }}
             />
 
             {/* Updated Date (if different from created) */}
@@ -149,6 +211,7 @@ export default function BlogDetailPage() {
                 </p>
               </div>
             )}
+            </div>
           </div>
         </AnimatedContainer>
 

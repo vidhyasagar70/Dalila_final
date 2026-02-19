@@ -272,6 +272,36 @@ export default function BlogsPage() {
     }
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>, modalType: "add" | "edit") => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image size should be less than 5MB");
+      return;
+    }
+
+    // Convert to base64 data URL
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      if (modalType === "add") {
+        setNewBlog({ ...newBlog, featuredImage: dataUrl });
+      } else {
+        setEditBlog({ ...editBlog, featuredImage: dataUrl });
+      }
+      setImageInputType("url"); // Switch back to URL view to show selected image
+    };
+    reader.readAsDataURL(file);
+  };
+
   const renderPagination = () => {
     if (totalPages <= 1) return null;
 
@@ -640,22 +670,23 @@ export default function BlogsPage() {
                     <LinkIcon size={16} className="inline mr-2" />
                     Add URL
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageInputType("gallery");
-                      alert("Gallery selection coming soon!");
-                    }}
-                    className={`px-4 py-2 rounded-none border transition-colors ${
+                  <label
+                    className={`px-4 py-2 rounded-none border transition-colors cursor-pointer inline-flex items-center ${
                       imageInputType === "gallery"
                         ? "bg-[#c89e3a] text-white border-[#c89e3a]"
                         : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                    } ${jost.className}`}
-                    disabled={isSubmitting}
+                    } ${jost.className} ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <ImageIcon size={16} className="inline mr-2" />
-                    Select from Gallery
-                  </button>
+                    Select from Device
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileSelect(e, "add")}
+                      className="hidden"
+                      disabled={isSubmitting}
+                    />
+                  </label>
                 </div>
                 {imageInputType === "url" && (
                   <input
@@ -734,7 +765,7 @@ export default function BlogsPage() {
                   onChange={(e) =>
                     setNewBlog({ ...newBlog, metaDescription: e.target.value })
                   }
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] min-h-[80px] bg-white text-gray-900 ${jost.className}`}
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] min-h-20 bg-white text-gray-900 ${jost.className}`}
                   placeholder="SEO meta description"
                   disabled={isSubmitting}
                 />
@@ -895,22 +926,23 @@ export default function BlogsPage() {
                     <LinkIcon size={16} className="inline mr-2" />
                     Add URL
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageInputType("gallery");
-                      alert("Gallery selection coming soon!");
-                    }}
-                    className={`px-4 py-2 rounded-none border transition-colors ${
+                  <label
+                    className={`px-4 py-2 rounded-none border transition-colors cursor-pointer inline-flex items-center ${
                       imageInputType === "gallery"
                         ? "bg-[#c89e3a] text-white border-[#c89e3a]"
                         : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                    } ${jost.className}`}
-                    disabled={isSubmitting}
+                    } ${jost.className} ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <ImageIcon size={16} className="inline mr-2" />
-                    Select from Gallery
-                  </button>
+                    Select from Device
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileSelect(e, "edit")}
+                      className="hidden"
+                      disabled={isSubmitting}
+                    />
+                  </label>
                 </div>
                 {imageInputType === "url" && (
                   <input
@@ -989,7 +1021,7 @@ export default function BlogsPage() {
                   onChange={(e) =>
                     setEditBlog({ ...editBlog, metaDescription: e.target.value })
                   }
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] min-h-[80px] bg-white text-gray-900 ${jost.className}`}
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[#c89e3a] min-h-20 bg-white text-gray-900 ${jost.className}`}
                   placeholder="SEO meta description"
                   disabled={isSubmitting}
                 />
