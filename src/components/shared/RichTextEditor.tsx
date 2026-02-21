@@ -2,8 +2,9 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Bold,
   Italic,
@@ -15,6 +16,8 @@ import {
   Quote,
   Undo,
   Redo,
+  Link as LinkIcon,
+  MousePointerClick,
 } from "lucide-react";
 
 interface RichTextEditorProps {
@@ -32,9 +35,19 @@ export default function RichTextEditor({
   disabled = false,
   className = "",
 }: RichTextEditorProps) {
+  const [showCtaModal, setShowCtaModal] = useState(false);
+  const [ctaText, setCtaText] = useState("");
+  const [ctaUrl, setCtaUrl] = useState("");
+
   const editor = useEditor({
     extensions: [
       StarterKit,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-blue-600 underline hover:text-blue-800',
+        },
+      }),
       Placeholder.configure({
         placeholder,
       }),
@@ -53,6 +66,32 @@ export default function RichTextEditor({
     }
   }, [value, editor]);
 
+  const insertCtaButton = () => {
+    if (!ctaText.trim() || !ctaUrl.trim()) {
+      alert("Please enter both button text and URL");
+      return;
+    }
+
+    if (editor) {
+      // Create HTML for CTA button with strong color enforcement
+      const ctaHtml = `<p><a href="${ctaUrl}" class="cta-button" style="display: inline-block !important; padding: 12px 24px !important; background-color: #030822 !important; color: #ffffff !important; text-decoration: none !important; border-radius: 4px !important; font-weight: 600 !important; transition: background-color 0.3s !important; margin: 16px 0 !important;" target="_blank" rel="noopener noreferrer"><span style="color: #ffffff !important;">${ctaText}</span></a></p>`;
+      
+      editor.chain().focus().insertContent(ctaHtml).run();
+      
+      // Reset form
+      setCtaText("");
+      setCtaUrl("");
+      setShowCtaModal(false);
+    }
+  };
+
+  const addLink = () => {
+    const url = window.prompt("Enter URL:");
+    if (url) {
+      editor?.chain().focus().setLink({ href: url }).run();
+    }
+  };
+
   if (!editor) {
     return null;
   }
@@ -66,7 +105,7 @@ export default function RichTextEditor({
           color: #111827 !important;
           background-color: #ffffff !important;
         }
-        .ProseMirror * {
+        .ProseMirror *:not(.cta-button):not(.cta-button *) {
           color: #111827 !important;
         }
         .ProseMirror p.is-editor-empty:first-child::before {
@@ -138,6 +177,28 @@ export default function RichTextEditor({
         .ProseMirror em {
           font-style: italic;
           color: #111827 !important;
+        }
+        .ProseMirror a {
+          color: #2563eb !important;
+          text-decoration: underline;
+        }
+        .ProseMirror a.cta-button {
+          display: inline-block;
+          padding: 12px 24px;
+          background-color: #030822;
+          color: #ffffff !important;
+          text-decoration: none;
+          border-radius: 4px;
+          font-weight: 600;
+          transition: background-color 0.3s;
+          margin: 16px 0;
+          cursor: pointer;
+        }
+        .ProseMirror a.cta-button * {
+          color: #ffffff !important;
+        }
+        .ProseMirror a.cta-button:hover {
+          background-color: #020615;
         }
       `}</style>
       <div className={`border border-gray-300 rounded-none bg-white ${className}`}>
@@ -253,6 +314,32 @@ export default function RichTextEditor({
 
         <button
           type="button"
+          onClick={addLink}
+          disabled={disabled}
+          className={`p-2 rounded hover:bg-gray-200 transition-colors text-gray-700 ${
+            editor.isActive("link") ? "bg-gray-300 text-gray-900" : ""
+          } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+          title="Add Link"
+        >
+          <LinkIcon size={18} className="text-gray-700" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowCtaModal(true)}
+          disabled={disabled}
+          className={`p-2 rounded hover:bg-gray-200 transition-colors text-gray-700 ${
+            disabled ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          title="Add CTA Button"
+        >
+          <MousePointerClick size={18} className="text-gray-700" />
+        </button>
+
+        <div className="w-px h-8 bg-gray-300 mx-1"></div>
+
+        <button
+          type="button"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={disabled || !editor.can().undo()}
           className={`p-2 rounded hover:bg-gray-200 transition-colors text-gray-700 ${
@@ -284,6 +371,81 @@ export default function RichTextEditor({
         />
       </div>
     </div>
+
+    {/* CTA Button Modal */}
+    {showCtaModal && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Add CTA Button</h3>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Button Text
+              </label>
+              <input
+                type="text"
+                value={ctaText}
+                onChange={(e) => setCtaText(e.target.value)}
+                placeholder="e.g., Shop Now, Learn More, View Products"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#050C3A] text-gray-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Button URL
+              </label>
+              <input
+                type="url"
+                value={ctaUrl}
+                onChange={(e) => setCtaUrl(e.target.value)}
+                placeholder="e.g., https://example.com/products or /inventory/ABC123"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#050C3A] text-gray-900"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Can be full URL (https://...) or relative path (/inventory/ABC123)
+              </p>
+            </div>
+
+            {/* Preview */}
+            {ctaText && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preview:
+                </label>
+                <a
+                  href="#"
+                  className="inline-block px-6 py-3 bg-[#030822] text-white rounded font-semibold hover:bg-[#020615] transition-colors pointer-events-none"
+                >
+                  {ctaText}
+                </a>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 mt-6 justify-end">
+            <button
+              onClick={() => {
+                setShowCtaModal(false);
+                setCtaText("");
+                setCtaUrl("");
+              }}
+              className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={insertCtaButton}
+              disabled={!ctaText.trim() || !ctaUrl.trim()}
+              className="px-4 py-2 bg-[#030822] text-white rounded hover:bg-[#020615] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Insert Button
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }
