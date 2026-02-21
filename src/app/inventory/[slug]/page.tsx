@@ -32,9 +32,22 @@ export default function DiamondDetailPage() {
           limit: 1 
         });
         
-        if (response?.success && response?.data?.diamonds && response.data.diamonds.length > 0) {
-          setDiamond(response.data.diamonds[0] as unknown as DiamondData);
-          setError(null);
+        if (response?.success && response?.data) {
+          let foundDiamond = null;
+          
+          // Handle different response structures
+          if (Array.isArray(response.data)) {
+            foundDiamond = response.data[0];
+          } else if (response.data.diamonds && Array.isArray(response.data.diamonds)) {
+            foundDiamond = response.data.diamonds[0];
+          }
+          
+          if (foundDiamond) {
+            setDiamond(foundDiamond as unknown as DiamondData);
+            setError(null);
+          } else {
+            setError("Diamond not found");
+          }
         } else {
           setError("Diamond not found");
         }
