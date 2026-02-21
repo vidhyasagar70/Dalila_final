@@ -26,10 +26,14 @@ export default function DiamondDetailPage() {
 
       try {
         setLoading(true);
-        const response = await diamondApi.getById(decodeURIComponent(stoneNo));
+        // Use search API with searchTerm to find diamond by STONE_NO
+        const response = await diamondApi.search({ 
+          searchTerm: decodeURIComponent(stoneNo),
+          limit: 1 
+        });
         
-        if (response?.success && response?.data) {
-          setDiamond(response.data as unknown as DiamondData);
+        if (response?.success && response?.data?.diamonds && response.data.diamonds.length > 0) {
+          setDiamond(response.data.diamonds[0] as unknown as DiamondData);
           setError(null);
         } else {
           setError("Diamond not found");
