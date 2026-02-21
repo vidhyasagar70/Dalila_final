@@ -477,6 +477,7 @@ export default function BlogsPage() {
                       {/* Featured Image */}
                       {blog.featuredImage && (
                         <div className="w-full h-56 overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={blog.featuredImage}
                             alt={blog.title}
@@ -719,6 +720,7 @@ export default function BlogsPage() {
                 )}
                 {newBlog.featuredImage && (
                   <div className="mt-2 border border-gray-300 rounded p-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={newBlog.featuredImage}
                       alt="Preview"
@@ -975,6 +977,7 @@ export default function BlogsPage() {
                 )}
                 {editBlog.featuredImage && (
                   <div className="mt-2 border border-gray-300 rounded p-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={editBlog.featuredImage}
                       alt="Preview"

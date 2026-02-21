@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Grid3x3, List, ChevronDown, ChevronUp, Filter, Search, RotateCcw, ShoppingCart, Hand, GitCompare } from "lucide-react";
+import { Grid3x3, List, ChevronDown, ChevronUp, Filter, Search, RotateCcw, GitCompare } from "lucide-react";
 import Image from "next/image";
 import { DiamondData } from "@/types/diamond.types";
 import DiamondComparisonPage from "./DiamondComparisonPage";

@@ -187,6 +187,7 @@ export default function BlogDetailPage() {
             {/* Featured Image */}
             {blog.featuredImage && (
               <div className="w-full h-72 md:h-[500px] overflow-hidden rounded-lg mb-8">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={blog.featuredImage}
                   alt={blog.title}
