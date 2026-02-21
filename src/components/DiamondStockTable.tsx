@@ -131,14 +131,10 @@ const DiamondStockTable: React.FC<TableProps> = ({
     setSelectedDiamond(diamond);
     onRowClick?.(diamond);
     
-    // Update URL with diamond details: /inventory/shape/color/cut/sym
-    // Normalize to lowercase for consistent URLs
+    // Update URL with diamond STONE_NO for unique, shareable links
     if (typeof window !== "undefined") {
-      const shape = (diamond.SHAPE || 'unknown').toLowerCase();
-      const color = (diamond.COLOR || 'unknown').toLowerCase();
-      const cut = (diamond.CUT || 'unknown').toLowerCase();
-      const sym = (diamond.SYM || 'unknown').toLowerCase();
-      const newUrl = `/inventory/${encodeURIComponent(shape)}/${encodeURIComponent(color)}/${encodeURIComponent(cut)}/${encodeURIComponent(sym)}`;
+      const stoneNo = encodeURIComponent(diamond.STONE_NO);
+      const newUrl = `/inventory/${stoneNo}`;
       // Use replaceState to avoid polluting browser history
       window.history.replaceState(null, '', newUrl);
     }
