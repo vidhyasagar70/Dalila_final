@@ -142,6 +142,41 @@ const DiamondGridView: React.FC<GridViewProps> = ({
         priceFilters,
     ]);
 
+    /**
+     * Handle clicking on a diamond to open detail view
+     */
+    const handleDiamondClick = (e: React.MouseEvent, diamond: DiamondData) => {
+        e.stopPropagation();
+        if (onRowClick) {
+            onRowClick(diamond);
+        } else {
+            setSelectedDiamond(diamond);
+        }
+        
+        // Update URL with diamond details: /inventory/shape/color/cut/sym
+        // Normalize to lowercase for consistent URLs
+        if (typeof window !== "undefined") {
+            const shape = (diamond.SHAPE || 'unknown').toLowerCase();
+            const color = (diamond.COLOR || 'unknown').toLowerCase();
+            const cut = (diamond.CUT || 'unknown').toLowerCase();
+            const sym = (diamond.SYM || 'unknown').toLowerCase();
+            const newUrl = `/inventory/${encodeURIComponent(shape)}/${encodeURIComponent(color)}/${encodeURIComponent(cut)}/${encodeURIComponent(sym)}`;
+            // Use replaceState to avoid polluting browser history
+            window.history.replaceState(null, '', newUrl);
+        }
+    };
+
+    /**
+     * Handle closing the detail view and navigate back to /inventory
+     */
+    const handleCloseDetail = () => {
+        if (typeof window !== "undefined") {
+            // Use replaceState to avoid polluting browser history
+            window.history.replaceState(null, '', '/inventory');
+        }
+        setSelectedDiamond(null);
+    };
+
     // Show loader only while loading and hasn't loaded data yet
     if (loading && !hasLoadedOnce) {
         return <DiamondTableLoading />;
@@ -227,12 +262,7 @@ const DiamondGridView: React.FC<GridViewProps> = ({
                                             }
                                         }}
                                         onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (onRowClick) {
-                                                onRowClick(diamond);
-                                            } else {
-                                                setSelectedDiamond(diamond);
-                                            }
+                                            handleDiamondClick(e, diamond);
                                         }}
                                     >
                                         {videoUrl ? (
@@ -306,14 +336,7 @@ const DiamondGridView: React.FC<GridViewProps> = ({
                                         {/* View Button */}
                                         <button
                                             onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (onRowClick) {
-                                                    onRowClick(diamond);
-                                                } else {
-                                                    setSelectedDiamond(
-                                                        diamond
-                                                    );
-                                                }
+                                                handleDiamondClick(e, diamond);
                                             }}
                                             className="w-full mt-2 px-4 py-1.5 text-xs font-medium text-white bg-[#050C3A] hover:bg-[#030822] transition-colors duration-200 rounded"
                                         >
@@ -413,12 +436,7 @@ const DiamondGridView: React.FC<GridViewProps> = ({
                                             }
                                         }}
                                         onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (onRowClick) {
-                                                onRowClick(diamond);
-                                            } else {
-                                                setSelectedDiamond(diamond);
-                                            }
+                                            handleDiamondClick(e, diamond);
                                         }}
                                     >
                                         {videoUrl ? (
@@ -475,14 +493,7 @@ const DiamondGridView: React.FC<GridViewProps> = ({
                                         {/* View Button - Compact */}
                                         <button
                                             onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (onRowClick) {
-                                                    onRowClick(diamond);
-                                                } else {
-                                                    setSelectedDiamond(
-                                                        diamond
-                                                    );
-                                                }
+                                                handleDiamondClick(e, diamond);
                                             }}
                                             className="w-full mt-1 px-2 py-1 text-[9px] font-medium text-white bg-[#050C3A] hover:bg-[#030822] transition-colors duration-200 rounded"
                                         >
@@ -521,7 +532,7 @@ const DiamondGridView: React.FC<GridViewProps> = ({
             {selectedDiamond && (
                 <DiamondDetailView
                     diamond={selectedDiamond}
-                    onClose={() => setSelectedDiamond(null)}
+                    onClose={handleCloseDetail}
                 />
             )}
         </>

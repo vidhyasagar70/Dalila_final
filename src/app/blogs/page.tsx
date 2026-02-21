@@ -18,6 +18,7 @@ import {
 import AnimatedContainer from "@/components/shared/AnimatedContainer";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import { blogApi, type Blog } from "@/lib/api";
+import { getBlogSlug } from "@/utils/helpers";
 
 const marcellus = Marcellus({
   variable: "--font-marcellus",
@@ -73,6 +74,21 @@ export default function BlogsPage() {
     metaDescription: "",
   });
   const itemsPerPage = 9;
+
+  // Set page title and meta description for blog listing page
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.title = "Blogs & Articles - Dalila Diamonds | Diamond Industry Insights";
+      
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute(
+          "content",
+          "Explore expert insights, industry trends, and educational articles about diamonds. Learn about diamond quality, certification, and the latest in the diamond industry."
+        );
+      }
+    }
+  }, []);
 
   useEffect(() => {
     fetchBlogs();
@@ -390,15 +406,15 @@ export default function BlogsPage() {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-4 bg-linear-to-b from-white to-gray-50">
+      <section className="pt-32 pb-20 px-4 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto max-w-7xl">
           <AnimatedContainer direction="up">
             <div className="text-center mb-4">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-6">
                 <div className="w-32"></div>
 
                 <h1
-                  className={`text-4xl md:text-5xl lg:text-6xl text-[#2d2d2d] font-normal tracking-tight ${marcellus.className}`}
+                  className={`text-4xl md:text-5xl lg:text-6xl text-[#1a1a1a] font-bold tracking-tight ${marcellus.className}`}
                 >
                   Our Blog
                 </h1>
@@ -407,7 +423,7 @@ export default function BlogsPage() {
                   {isAdmin && (
                     <button
                       onClick={() => setShowAddModal(true)}
-                      className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-[#c89e3a] text-white rounded-none hover:bg-[#9d7400] transition-colors"
+                      className="flex items-center cursor-pointer gap-2 px-5 py-2.5 bg-[#c89e3a] text-white hover:bg-[#b8922e] transition-all shadow-md hover:shadow-lg"
                       title="Add New Blog"
                     >
                       <Plus size={20} />
@@ -420,9 +436,9 @@ export default function BlogsPage() {
                   )}
                 </div>
               </div>
-              <div className="w-20 h-1 bg-[#c89e3a] mx-auto mb-6"></div>
+              <div className="w-24 h-1 bg-[#c89e3a] mx-auto mb-8"></div>
               <p
-                className={`text-gray-600 text-lg md:text-xl max-w-3xl mx-auto font-light ${jost.className}`}
+                className={`text-gray-600 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed ${jost.className}`}
               >
                 Insights, trends, and knowledge about diamonds and the jewelry
                 industry
@@ -433,11 +449,11 @@ export default function BlogsPage() {
       </section>
 
       {/* Blogs Grid Section */}
-      <section className="py-16 px-4">
+      <section className="py-16 px-4 bg-white">
         <div className="container mx-auto max-w-7xl">
           {loading ? (
             <div className="flex justify-center items-center py-20">
-              <Loader2 className="w-12 h-12 animate-spin text-[#FAF6EB] mx-auto mb-4" />
+              <Loader2 className="w-12 h-12 animate-spin text-[#c89e3a] mx-auto mb-4" />
             </div>
           ) : blogs.length === 0 ? (
             <div className="text-center py-20">
@@ -455,16 +471,16 @@ export default function BlogsPage() {
                     delay={index * 0.1}
                   >
                     <div
-                      className="bg-white rounded-none shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer h-full flex flex-col relative"
-                      onClick={() => router.push(`/blogs/${blog._id}`)}
+                      className="bg-white border border-gray-200 hover:border-[#c89e3a] shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer h-full flex flex-col relative group overflow-hidden"
+                      onClick={() => router.push(`/blogs/${getBlogSlug(blog)}`)}
                     >
                       {/* Featured Image */}
                       {blog.featuredImage && (
-                        <div className="w-full h-48 overflow-hidden">
+                        <div className="w-full h-56 overflow-hidden">
                           <img
                             src={blog.featuredImage}
                             alt={blog.title}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = "none";
                             }}
@@ -474,25 +490,25 @@ export default function BlogsPage() {
 
                       {/* Admin Action Buttons - Only visible for Admin */}
                       {isAdmin && (
-                        <div className="absolute top-4 right-4 z-10 flex gap-2">
+                        <div className="absolute top-3 right-3 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={(e) => handleEditClick(blog, e)}
-                            className="cursor-pointer p-2 bg-white rounded-none shadow-md hover:bg-[#c89e3a] hover:text-white transition-colors group"
+                            className="cursor-pointer p-2 bg-white/90 backdrop-blur shadow-md hover:bg-[#c89e3a] hover:text-white transition-all group/btn"
                             title="Edit Blog"
                           >
                             <Edit2
-                              size={18}
-                              className="text-[#c89e3a] group-hover:text-white"
+                              size={16}
+                              className="text-[#c89e3a] group-hover/btn:text-white"
                             />
                           </button>
                           <button
                             onClick={(e) => handleDeleteBlog(blog._id, blog.title, e)}
-                            className="cursor-pointer p-2 bg-white rounded-none shadow-md hover:bg-red-600 hover:text-white transition-colors group"
+                            className="cursor-pointer p-2 bg-white/90 backdrop-blur shadow-md hover:bg-red-600 hover:text-white transition-all group/btn"
                             title="Delete Blog"
                           >
                             <Trash2
-                              size={18}
-                              className="text-red-600 group-hover:text-white"
+                              size={16}
+                              className="text-red-600 group-hover/btn:text-white"
                             />
                           </button>
                         </div>
@@ -500,34 +516,34 @@ export default function BlogsPage() {
 
                       <div className="p-6 flex-1 flex flex-col">
                         <h3
-                          className={`text-xl md:text-2xl font-semibold text-[#2d2d2d] mb-3 hover:text-[#c89e3a] transition-colors pr-10 ${marcellus.className}`}
+                          className={`text-xl md:text-2xl font-bold text-[#1a1a1a] mb-3 group-hover:text-[#c89e3a] transition-colors line-clamp-2 ${marcellus.className}`}
                         >
                           {blog.title}
                         </h3>
 
                         {blog.h2Subtitle && (
                           <h4
-                            className={`text-lg text-gray-700 mb-3 ${jost.className}`}
+                            className={`text-base text-gray-600 mb-4 line-clamp-2 ${jost.className}`}
                           >
                             {blog.h2Subtitle}
                           </h4>
                         )}
 
                         <p
-                          className={`text-gray-600 mb-4 flex-1 ${jost.className}`}
+                          className={`text-gray-600 mb-6 flex-1 line-clamp-3 leading-relaxed ${jost.className}`}
                         >
                           {getExcerpt(blog.content || blog.description)}
                         </p>
 
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                           <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <User size={16} />
+                            <User size={14} className="text-[#c89e3a]" />
                             <span className={jost.className}>
                               {blog.authorName}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <Calendar size={16} />
+                            <Calendar size={14} className="text-[#c89e3a]" />
                             <span className={jost.className}>
                               {formatDate(blog.createdAt)}
                             </span>
@@ -535,9 +551,10 @@ export default function BlogsPage() {
                         </div>
 
                         <button
-                          className={`mt-4 text-[#c89e3a] hover:text-[#9d7400] font-semibold text-sm transition-colors ${jost.className}`}
+                          className={`mt-4 text-[#c89e3a] hover:text-[#b8922e] font-semibold text-sm transition-all flex items-center gap-2 group-hover:gap-3 ${jost.className}`}
                         >
-                          Read More →
+                          Read More
+                          <span className="text-lg">→</span>
                         </button>
                       </div>
                     </div>

@@ -27,10 +27,10 @@ export default function BlogDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (params.id) {
-      fetchBlogDetail(params.id as string);
+    if (params.slug) {
+      fetchBlogDetail(params.slug as string);
     }
-  }, [params.id]);
+  }, [params.slug]);
 
   // Update document title and meta tags when blog loads
   useEffect(() => {
@@ -70,14 +70,52 @@ export default function BlogDetailPage() {
     }
   }, [blog]);
 
-  const fetchBlogDetail = async (id: string) => {
+  const fetchBlogDetail = async (slug: string) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await blogApi.getById(id);
+      
+      // Fetch all blogs using existing API
+      const response = await blogApi.getAll({
+        page: 1,
+        limit: 1000, // Get all blogs
+        sortBy: "createdAt",
+        sortOrder: "desc",
+      });
 
       if (response && response.data) {
-        setBlog(response.data);
+        // Find the blog that matches the slug
+        const foundBlog = response.data.find((blog) => {
+          // Normalize the slug from URL (remove leading/trailing slashes)
+          const normalizedSlug = slug.replace(/^\/+|\/+$/g, '');
+          
+          // Check if blog has customSlug that matches
+          if (blog.customSlug) {
+            // Normalize customSlug (remove leading/trailing slashes)
+            const normalizedCustomSlug = blog.customSlug.replace(/^\/+|\/+$/g, '');
+            if (normalizedCustomSlug === normalizedSlug) {
+              return true;
+            }
+          }
+          
+          // Otherwise, generate slug from title and compare
+          const generatedSlug = blog.title
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '');
+          
+          return generatedSlug === normalizedSlug;
+        });
+
+        if (foundBlog) {
+          setBlog(foundBlog);
+        } else {
+          setError("Blog not found");
+        }
       } else {
         setError("Blog not found");
       }
@@ -109,7 +147,7 @@ export default function BlogDetailPage() {
   if (error || !blog) {
     return (
       <div className="bg-gray-50 min-h-screen">
-        <div className="container mx-auto max-w-4xl px-4 py-32">
+        <div className="container mx-auto max-w-4xl px-4 pt-40">
           <div className="text-center">
             <h1
               className={`text-3xl md:text-4xl text-[#2d2d2d] mb-4 ${marcellus.className}`}
@@ -130,25 +168,25 @@ export default function BlogDetailPage() {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-white min-h-screen">
       {/* Back Button */}
-      <div className="container mx-auto max-w-4xl px-4 pt-24 pb-4">
+      <div className="container mx-auto max-w-5xl px-4 pt-40 pb-6">
         <button
           onClick={() => router.push("/blogs")}
-          className={`inline-flex items-center gap-2 text-[#c89e3a] hover:text-[#9d7400] font-semibold transition-colors ${jost.className}`}
+          className={`inline-flex items-center gap-2 text-[#c89e3a] hover:text-[#b8922e] font-medium transition-all ${jost.className} hover:gap-3`}
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={18} />
           Back to Blogs
         </button>
       </div>
 
       {/* Blog Content */}
-      <article className="container mx-auto max-w-4xl px-4 py-8">
+      <article className="container mx-auto max-w-5xl px-4 pb-16">
         <AnimatedContainer direction="up">
-          <div className="bg-white rounded-none shadow-lg overflow-hidden">
+          <div className="bg-white">
             {/* Featured Image */}
             {blog.featuredImage && (
-              <div className="w-full h-64 md:h-96 overflow-hidden">
+              <div className="w-full h-72 md:h-[500px] overflow-hidden rounded-lg mb-8">
                 <img
                   src={blog.featuredImage}
                   alt={blog.title}
@@ -160,10 +198,10 @@ export default function BlogDetailPage() {
               </div>
             )}
             
-            <div className="p-8 md:p-12">
+            <div className="max-w-4xl mx-auto">
               {/* Title */}
               <h1
-                className={`text-3xl md:text-4xl lg:text-5xl text-[#2d2d2d] font-normal tracking-tight mb-4 ${marcellus.className}`}
+                className={`text-3xl md:text-4xl lg:text-5xl text-[#1a1a1a] font-bold leading-tight mb-6 ${marcellus.className}`}
               >
                 {blog.title}
               </h1>
@@ -171,22 +209,22 @@ export default function BlogDetailPage() {
               {/* H2 Subtitle */}
               {blog.h2Subtitle && (
                 <h2
-                  className={`text-xl md:text-2xl text-gray-600 font-normal mb-6 ${jost.className}`}
+                  className={`text-lg md:text-xl text-gray-700 font-normal leading-relaxed mb-8 ${jost.className}`}
                 >
                   {blog.h2Subtitle}
                 </h2>
               )}
 
             {/* Meta Information */}
-            <div className="flex flex-wrap items-center gap-6 pb-6 mb-8 border-b border-gray-200">
+            <div className="flex flex-wrap items-center gap-6 pb-8 mb-10 border-b-2 border-gray-100">
               <div className="flex items-center gap-2 text-gray-600">
-                <User size={18} />
+                <User size={16} className="text-[#c89e3a]" />
                 <span className={`text-sm font-medium ${jost.className}`}>
-                  {blog.authorName}
+                  By {blog.authorName}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-gray-600">
-                <Calendar size={18} />
+                <Calendar size={16} className="text-[#c89e3a]" />
                 <span className={`text-sm ${jost.className}`}>
                   {formatDate(blog.createdAt)}
                 </span>
@@ -195,18 +233,14 @@ export default function BlogDetailPage() {
 
             {/* Blog Content (Rich Text HTML) */}
             <div
-              className={`prose prose-lg max-w-none ${jost.className}`}
-              style={{
-                color: "#4a4a4a",
-                lineHeight: "1.8",
-              }}
+              className={`blog-content ${jost.className}`}
               dangerouslySetInnerHTML={{ __html: blog.content || blog.description }}
             />
 
             {/* Updated Date (if different from created) */}
             {blog.updatedAt && blog.updatedAt !== blog.createdAt && (
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <p className={`text-sm text-gray-500 ${jost.className}`}>
+              <div className="mt-12 pt-8 border-t-2 border-gray-100">
+                <p className={`text-sm text-gray-500 italic ${jost.className}`}>
                   Last updated: {formatDate(blog.updatedAt)}
                 </p>
               </div>
@@ -216,10 +250,10 @@ export default function BlogDetailPage() {
         </AnimatedContainer>
 
         {/* Navigation to other blogs */}
-        <div className="mt-8 text-center">
+        <div className="mt-16 text-center">
           <button
             onClick={() => router.push("/blogs")}
-            className={`inline-flex items-center gap-2 px-6 py-3 bg-[#c89e3a] text-white rounded-none hover:bg-[#9d7400] transition-colors font-semibold ${jost.className}`}
+            className={`inline-flex items-center gap-2 px-8 py-3.5 bg-[#c89e3a] text-white hover:bg-[#b8922e] transition-all font-semibold text-base ${jost.className} shadow-md hover:shadow-lg`}
           >
             View All Blogs
           </button>

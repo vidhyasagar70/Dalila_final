@@ -1,0 +1,4 @@
+This file shows the proper Next.js 15 way to implement metadata.
+The actual implementation is in page.tsx - this is just documentation.
+
+See the updated page.tsx for the correct implementation using generateMetadata.

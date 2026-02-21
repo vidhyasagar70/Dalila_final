@@ -121,3 +121,98 @@ main {
   }
 }
 
+/* Blog Content Styling - Pure Tailwind CSS */
+@layer components {
+  .blog-content {
+    @apply text-[#333] leading-relaxed;
+  }
+  
+  .blog-content h1 {
+    @apply text-[2rem] font-bold text-[#1a1a1a] mt-10 mb-6 leading-tight;
+  }
+  
+  .blog-content h2 {
+    @apply text-[1.75rem] font-semibold text-[#1a1a1a] mt-8 mb-5 leading-snug pb-2 border-b-2 border-gray-200;
+  }
+  
+  .blog-content h3 {
+    @apply text-2xl font-semibold text-[#2d2d2d] mt-7 mb-4 leading-snug;
+  }
+  
+  .blog-content h4 {
+    @apply text-xl font-semibold text-[#2d2d2d] mt-6 mb-3;
+  }
+  
+  .blog-content p {
+    @apply text-[1.0625rem] leading-relaxed text-[#444] my-5;
+  }
+  
+  .blog-content ul,
+  .blog-content ol {
+    @apply my-6 pl-8;
+  }
+  
+  .blog-content ul li,
+  .blog-content ol li {
+    @apply text-[1.0625rem] leading-relaxed text-[#444] my-3 pl-2;
+  }
+  
+  .blog-content ul li {
+    @apply list-disc;
+  }
+  
+  .blog-content ol li {
+    @apply list-decimal;
+  }
+  
+  .blog-content a {
+    @apply text-[#c89e3a] underline transition-colors duration-200 hover:text-[#b8922e];
+  }
+  
+  .blog-content strong,
+  .blog-content b {
+    @apply font-semibold text-[#1a1a1a];
+  }
+  
+  .blog-content em,
+  .blog-content i {
+    @apply italic;
+  }
+  
+  .blog-content blockquote {
+    @apply border-l-4 border-[#c89e3a] px-6 py-4 my-6 bg-gray-50 italic text-gray-600;
+  }
+  
+  .blog-content img {
+    @apply max-w-full h-auto rounded-lg my-8;
+  }
+  
+  .blog-content code {
+    @apply bg-gray-100 px-1.5 py-0.5 rounded text-sm text-pink-600;
+  }
+  
+  .blog-content pre {
+    @apply bg-gray-100 p-5 rounded-lg overflow-x-auto my-6;
+  }
+  
+  .blog-content pre code {
+    @apply bg-transparent p-0 text-[#333];
+  }
+  
+  .blog-content hr {
+    @apply border-0 border-t-2 border-gray-200 my-10;
+  }
+  
+  .blog-content table {
+    @apply w-full border-collapse my-6;
+  }
+  
+  .blog-content table th,
+  .blog-content table td {
+    @apply border border-gray-300 p-3 text-left;
+  }
+  
+  .blog-content table th {
+    @apply bg-gray-100 font-semibold;
+  }
+}

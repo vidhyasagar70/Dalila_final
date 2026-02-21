@@ -141,8 +141,8 @@ export default function RichTextEditor({
         }
       `}</style>
       <div className={`border border-gray-300 rounded-none bg-white ${className}`}>
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-1 p-2 border-b border-gray-300 bg-gray-50">
+      {/* Toolbar - Sticky */}
+      <div className="sticky top-0 z-10 flex flex-wrap gap-1 p-2 border-b border-gray-300 bg-gray-50">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -276,11 +276,13 @@ export default function RichTextEditor({
         </button>
       </div>
 
-      {/* Editor Content */}
-      <EditorContent
-        editor={editor}
-        className="prose max-w-none p-4 min-h-[200px] bg-white focus:outline-none text-gray-900"
-      />
+      {/* Editor Content - Scrollable */}
+      <div className="max-h-96 overflow-y-auto">
+        <EditorContent
+          editor={editor}
+          className="prose max-w-none p-4 min-h-[200px] bg-white focus:outline-none text-gray-900"
+        />
+      </div>
     </div>
     </>
   );

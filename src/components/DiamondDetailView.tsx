@@ -70,6 +70,21 @@ const DiamondDetailView: React.FC<DiamondDetailViewProps> = ({
         return () => window.removeEventListener("resize", checkMobile);
     }, []);
 
+    // Handle browser back button
+    useEffect(() => {
+        const handlePopState = () => {
+            // If URL no longer contains diamond details, close the modal
+            if (typeof window !== "undefined" && window.location.pathname === '/inventory') {
+                onClose();
+            }
+        };
+
+        if (typeof window !== "undefined") {
+            window.addEventListener('popstate', handlePopState);
+            return () => window.removeEventListener('popstate', handlePopState);
+        }
+    }, [onClose]);
+
     // Check user role and login status on mount
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -110,6 +125,15 @@ const DiamondDetailView: React.FC<DiamondDetailViewProps> = ({
     const handleLoginRedirect = () => {
         onClose();
         router.push("/login");
+    };
+    
+    // Handle closing the detail view and navigate back to /inventory
+    const handleClose = () => {
+        if (typeof window !== "undefined") {
+            // Use replaceState to avoid polluting browser history
+            window.history.replaceState(null, '', '/inventory');
+        }
+        onClose();
     };
 
     const handleAddToCart = async () => {
@@ -257,13 +281,13 @@ const DiamondDetailView: React.FC<DiamondDetailViewProps> = ({
         <div
             className={`fixed left-0 right-0 bottom-0 w-full flex items-center justify-center z-40 bg-black/50 ${mavenPro.variable} ${marcellus.variable}`}
             style={{ top: isMobile ? 0 : '88px' }}
-            onClick={onClose}
+            onClick={handleClose}
         >
             {isMobile ? (
                 // MOBILE VIEW
                 <DiamondDetailViewMobile
                     diamond={diamond}
-                    onClose={onClose}
+                    onClose={handleClose}
                     isLoggedIn={isLoggedIn}
                     userRole={userRole}
                     selectedMediaTab={selectedMediaTab}
@@ -297,7 +321,7 @@ const DiamondDetailView: React.FC<DiamondDetailViewProps> = ({
                         style={{ minHeight: "48px" }}
                     >
                         <button
-                            onClick={onClose}
+                            onClick={handleClose}
                             className="flex items-center gap-2 text-white transition-colors rounded px-3 py-1 font-medium bg-[#050C3A] hover:bg-[#030822] text-xs"
                             style={{ height: "32px" }}
                         >
